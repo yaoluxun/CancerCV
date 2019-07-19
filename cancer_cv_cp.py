@@ -27,6 +27,8 @@ from joblib import Parallel, delayed
 from time import sleep
 import sys
 
+import cProfile
+import re
 
 # In[2]:
 
@@ -279,15 +281,15 @@ def split_into_tiles(home_dir, fileNames, img_mat, count, normalizer, blank_rati
     # save
     print("Begin segmenting")
     if thread > 1:
-        Parallel(thread)(delayed(save_segmentation)(i, max_row, seg, tile_size, blank_ratio, home_dir, count, fileNames) for i in max_row)
+        Parallel(thread)(delayed(save_segmentation)(i, max_row, max_col, loc, seg, home_dir, count, fileNames, augment, tile_size, blank_ratio) for i in range(max_row))
     else:
-        for i in max_row:
-            save_segmentation(i, max_row, seg, tile_size, blank_ratio, home_dir, count, fileNames)
+        for i in range(max_row):
+            save_segmentation(i, max_row, max_col, loc, seg,  home_dir, count, fileNames,augment, tile_size, blank_ratio)
 
 
 
 
-def save_segmentation(i, max_row, seg, tile_size = 224, blank_ratio = 0.5, home_dir, count, fileNames):
+def save_segmentation(i, max_row, max_col, loc, seg, home_dir, count, fileNames, augment = 0, tile_size = 224, blank_ratio = 0.5):
     for j in range(max_col):
             aaa = seg[i, j]
             ccc = np.shape(aaa)
@@ -306,7 +308,7 @@ def save_segmentation(i, max_row, seg, tile_size = 224, blank_ratio = 0.5, home_
 
                         for index in range(augment):
                             augmented_image = augmentor.pop()
-                            cv2.imwrite( output_dir + "/" + "aug_" + str(index) + "_" + fileNames[:fileNames.rfind(".")] + "_" + str(count) + "_"                                     '_'.join(map(str,loc[i, j])) + ".jpg", augmented_image)
+                            cv2.imwrite( output_dir + "/" + "aug_" + str(index) + "_" + fileNames[:fileNames.rfind(".")] + "_" + str(count) + "_" +  '_'.join(map(str,loc[i, j])) + ".jpg", augmented_image)
 
 
 
